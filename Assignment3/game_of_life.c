@@ -115,6 +115,7 @@ int main(int argc, char** argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     int** partial_board = GenerateInitialGOL(rank, p);
+    MPI_Barrier(MPI_COMM_WORLD);
     print_board(partial_board, rank, p);
 
 
