@@ -52,7 +52,7 @@ int** GenerateInitialGOL(int rank, int p)
     return partial_board;
 }
 
-void print_board(int* board, int rank, int p)
+void print_board(int** board, int rank, int p)
 {
     if (board == NULL)
     {
