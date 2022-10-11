@@ -77,15 +77,14 @@ void print_board(int** board, int rank, int p)
             printf("\n");
         }
 
-        int** recv_board = (int**)malloc(HEIGHT/p*sizeof(int*));
-        for (int j = 0; j < HEIGHT/p; j++)
-        {
-            recv_board[j] = (int*)malloc(WIDTH*sizeof(int));
-        }
         // p0 receives and prints the partial boards of the other procs
         for (int i = 1; i < p; i++)
         {
-            
+            int** recv_board = (int**)malloc(HEIGHT/p*sizeof(int*));
+            for (int j = 0; j < HEIGHT/p; j++)
+            {
+                recv_board[j] = (int*)malloc(WIDTH*sizeof(int));
+            }
             MPI_Recv(recv_board, HEIGHT/p*WIDTH, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             for (int j = 0; j < HEIGHT/p; j++)
             {
@@ -103,12 +102,13 @@ void print_board(int** board, int rank, int p)
                 }
                 printf("\n");
             }
+            
+            for (int j = 0; j < HEIGHT/p; j++)
+            {
+                free(recv_board[j]);
+            }
+            free (recv_board);
         }
-        for (int j = 0; j < HEIGHT/p; j++)
-        {
-            free(recv_board[j]);
-        }
-        free (recv_board);
     }
 }
 
