@@ -102,7 +102,7 @@ void print_board(int** board, int rank, int p)
                 }
                 printf("\n");
             }
-            
+
             for (int j = 0; j < HEIGHT/p; j++)
             {
                 free(recv_board[j]);
@@ -130,7 +130,7 @@ int main(int argc, char** argv)
     {
         free(partial_board[i]);
     }
-    free(partial_board);
+    //free(partial_board);
 
     MPI_Finalize();
     return 0;
