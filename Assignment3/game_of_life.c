@@ -417,8 +417,9 @@ int main(int argc, char** argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     int partial_board[(HEIGHT/p)][WIDTH];
-
+    printf("Proc %d: line 420\n", rank);
     GenerateInitialGOL(partial_board, rank, p);
+    printf("Proc %d: line 422\n", rank);
     //PrintBoard(partial_board, rank, p);
 
     Simulate(partial_board, rank, p, NUM_ITERATIONS);
