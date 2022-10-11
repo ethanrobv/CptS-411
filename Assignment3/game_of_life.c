@@ -14,7 +14,7 @@
 
 enum State {Dead = 0, Alive = 1};
 
-int** GenerateInitialGOL(int** partial_board, int rank, int p)
+void GenerateInitialGOL(int** partial_board, int rank, int p)
 {
     // give each process a random seed (except p0, which uses system time)
     if (rank == 0)
@@ -42,8 +42,6 @@ int** GenerateInitialGOL(int** partial_board, int rank, int p)
             partial_board[i][j] = rand() % 2;
         }
     }
-
-    return partial_board;
 }
 
 int main(int argc, char** argv)
