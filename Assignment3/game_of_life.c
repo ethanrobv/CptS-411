@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 
     GenerateInitialGOL(partial_board, rank, p);
 
-    for (int i = 0; i < HEIGHT/p; i++)
+    for (int i = 0; i < WIDTH; i++)
     {
         free(partial_board[i]);
     }
