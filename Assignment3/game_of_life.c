@@ -125,13 +125,6 @@ int main(int argc, char** argv)
 
 
 
-
-    for (int i = 0; i < HEIGHT/p; i++)
-    {
-        free(partial_board[i]);
-    }
-    //free(partial_board);
-
     MPI_Finalize();
     return 0;
 }
