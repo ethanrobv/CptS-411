@@ -107,6 +107,7 @@ void print_board(int** board, int rank, int p)
             {
                 free(recv_board[j]);
             }
+            free (recv_board);
         }
     }
 }
@@ -122,6 +123,11 @@ int main(int argc, char** argv)
     MPI_Barrier(MPI_COMM_WORLD);
     print_board(partial_board, rank, p);
 
+    for (int i = 0; i < HEIGHT/p; i++)
+    {
+        free(partial_board[i]);
+    }
+    free(partial_board);
 
     MPI_Finalize();
     return 0;
