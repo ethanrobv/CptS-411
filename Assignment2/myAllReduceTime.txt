@@ -1,0 +1,8 @@
+My all reduce implementation time taken: 10388.408000 microseconds.
+My all reduce implementation time taken: 10306.037000 microseconds.
+My all reduce implementation time taken: 10458.974000 microseconds.
+My all reduce implementation time taken: 10425.712000 microseconds.
+My all reduce implementation time taken: 10352.513000 microseconds.
+My all reduce implementation time taken: 10361.169000 microseconds.
+My all reduce implementation time taken: 10351.141000 microseconds.
+My all reduce implementation time taken: 10407.934000 microseconds.

@@ -1,0 +1,15 @@
+p7: sum=15360
+p7: sum=21504
+p7: sum=26624
+p7: sum=30720
+p7: sum=33792
+p7: sum=35840
+p7: sum=36864
+Naive implementation time taken: 20357.470000 microseconds.
+Naive implementation time taken: 20354.071000 microseconds.
+Naive implementation time taken: 20715.750000 microseconds.
+Naive implementation time taken: 20595.728000 microseconds.
+Naive implementation time taken: 20578.934000 microseconds.
+Naive implementation time taken: 20579.103000 microseconds.
+Naive implementation time taken: 20488.995000 microseconds.
+Naive implementation time taken: 20462.348000 microseconds.

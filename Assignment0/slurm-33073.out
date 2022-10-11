@@ -1,0 +1,4 @@
+rank=0
+rank=0; num_procs=2
+rank=1
+rank=1; num_procs=2
