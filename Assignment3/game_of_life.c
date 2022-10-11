@@ -11,8 +11,7 @@
 
 #define HEIGHT 32
 #define WIDTH 32
-
-enum State {Dead = 0, Alive = 1};
+# define NUM_ITERATIONS 100
 
 void GenerateInitialGOL(int partial_board[][WIDTH], int rank, int p)
 {   
@@ -25,7 +24,6 @@ void GenerateInitialGOL(int partial_board[][WIDTH], int rank, int p)
             int seed = rand() % (217645199) + 1;
             MPI_Send(&seed, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
         }
-        int my_seed = rand() % (217645199) + 1;
     }
     else
     {
@@ -80,6 +78,336 @@ void PrintBoard(int board[][WIDTH], int rank, int p)
     }
 }
 
+void DetermineState(int partial_board[][WIDTH], int rank, int p)
+{
+    // send top row to p+1
+    // send bottom row to p-1
+
+    int top_row[WIDTH];
+    int bottom_row[WIDTH];
+
+    // copy top and bottom rows
+    for (int i = 0; i < WIDTH; i++)
+    {
+        top_row[i] = partial_board[0][i];
+        bottom_row[i] = partial_board[(HEIGHT/p)-1][i];
+    }
+
+    // send top row to p+1
+    if (rank != p-1)
+    {
+        MPI_Send(top_row, WIDTH, MPI_INT, rank+1, 2, MPI_COMM_WORLD);
+    }
+    else
+    {
+        MPI_Send(top_row, WIDTH, MPI_INT, 0, 2, MPI_COMM_WORLD);
+    }
+
+    // send bottom row to p-1
+    if (rank != 0)
+    {
+        MPI_Send(bottom_row, WIDTH, MPI_INT, rank-1, 1, MPI_COMM_WORLD);
+    }
+    else
+    {
+        MPI_Send(bottom_row, WIDTH, MPI_INT, p-1, 1, MPI_COMM_WORLD);
+    }
+
+    // receive top row from p-1
+    if (rank != 0)
+    {
+        MPI_Recv(top_row, WIDTH, MPI_INT, rank-1, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    }
+    else
+    {
+        MPI_Recv(bottom_row, WIDTH, MPI_INT, p-1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    }
+
+    // receive bottom row from p+1
+    if (rank != p-1)
+    {
+        MPI_Recv(bottom_row, WIDTH, MPI_INT, rank+1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    }
+    else
+    {
+        MPI_Recv(top_row, WIDTH, MPI_INT, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    }
+
+    // calculate next state of local cells
+    int next_state[(HEIGHT/p)][WIDTH];
+    for (int i = 0; i < (HEIGHT/p); i++)
+    {
+        for (int j = 0; j < WIDTH; j++)
+        {
+            // sum neighboring cells:
+            // Less than 3 neighbors: cell dies (or comes to life if dead)
+            // 3-5 neighbors: cell lives
+            // More than 5 neighbors: cell dies
+            int neighbor_sum = 0;
+
+            // need use top_row
+            if (i == 0)
+            {
+                // NORTH neighbor
+                neighbor_sum += top_row[j];
+
+                // NORTHWEST neighbor
+                if (j == 0)
+                {
+                    neighbor_sum += top_row[WIDTH-1];
+                }
+                else
+                {
+                    neighbor_sum += top_row[j-1];
+                }
+
+                // NORTHEAST neighbor
+                if (j == WIDTH-1)
+                {
+                    neighbor_sum += top_row[0];
+                }
+                else
+                {
+                    neighbor_sum += top_row[j+1];
+                }
+
+                // SOUTH neighbor
+                if (i == (HEIGHT/p)-1)
+                {
+                    neighbor_sum += bottom_row[j];
+                }
+                else
+                {
+                    neighbor_sum += partial_board[i+1][j];
+                }
+
+                // SOUTHWEST neighbor
+                if (i == (HEIGHT/p)-1)
+                {
+                    if (j == 0)
+                    {
+                        neighbor_sum += bottom_row[WIDTH-1];
+                    }
+                    else
+                    {
+                        neighbor_sum += bottom_row[j-1];
+                    }
+                }
+                else
+                {
+                    if (j == 0)
+                    {
+                        neighbor_sum += partial_board[i+1][WIDTH-1];
+                    }
+                    else
+                    {
+                        neighbor_sum += partial_board[i+1][j-1];
+                    }
+                }
+
+                // SOUTHEAST neighbor
+                if (i == (HEIGHT/p)-1)
+                {
+                    if (j == WIDTH-1)
+                    {
+                        neighbor_sum += bottom_row[0];
+                    }
+                    else
+                    {
+                        neighbor_sum += bottom_row[j+1];
+                    }
+                }
+                else
+                {
+                    if (j == WIDTH-1)
+                    {
+                        neighbor_sum += partial_board[i+1][0];
+                    }
+                    else
+                    {
+                        neighbor_sum += partial_board[i+1][j+1];
+                    }
+                }
+            }
+            // need to use bottom_row
+            else if (i == (HEIGHT/p)-1)
+            {
+                // NORTH neighbor
+                neighbor_sum += partial_board[i-1][j];
+
+                // NORTHWEST neighbor
+                if (j == 0)
+                {
+                    neighbor_sum += partial_board[i-1][WIDTH-1];
+                }
+                else
+                {
+                    neighbor_sum += partial_board[i-1][j-1];
+                }
+
+                // NORTHEAST neighbor
+                if (j == WIDTH-1)
+                {
+                    neighbor_sum += partial_board[i-1][0];
+                }
+                else
+                {
+                    neighbor_sum += partial_board[i-1][j+1];
+                }
+
+                // SOUTH neighbor
+                neighbor_sum += bottom_row[j];
+
+                // SOUTHWEST neighbor
+                if (j == 0)
+                {
+                    neighbor_sum += bottom_row[WIDTH-1];
+                }
+                else
+                {
+                    neighbor_sum += bottom_row[j-1];
+                }
+
+                // SOUTHEAST neighbor
+                if (j == WIDTH-1)
+                {
+                    neighbor_sum += bottom_row[0];
+                }
+                else
+                {
+                    neighbor_sum += bottom_row[j+1];
+                }
+
+                // WEST neighbor
+                if (j == 0)
+                {
+                    neighbor_sum += partial_board[i][WIDTH-1];
+                }
+                else
+                {
+                    neighbor_sum += partial_board[i][j-1];
+                }
+
+                // EAST neighbor
+                if (j == WIDTH-1)
+                {
+                    neighbor_sum += partial_board[i][0];
+                }
+                else
+                {
+                    neighbor_sum += partial_board[i][j+1];
+                }
+            }
+            else
+            {
+                // NORTH neighbor
+                neighbor_sum += partial_board[i-1][j];
+
+                // NORTHWEST neighbor
+                if (j == 0)
+                {
+                    neighbor_sum += partial_board[i-1][WIDTH-1];
+                }
+                else
+                {
+                    neighbor_sum += partial_board[i-1][j-1];
+                }
+
+                // NORTHEAST neighbor
+                if (j == WIDTH-1)
+                {
+                    neighbor_sum += partial_board[i-1][0];
+                }
+                else
+                {
+                    neighbor_sum += partial_board[i-1][j+1];
+                }
+
+                // SOUTH neighbor
+                neighbor_sum += partial_board[i+1][j];
+
+                // SOUTHWEST neighbor
+                if (j == 0)
+                {
+                    neighbor_sum += partial_board[i+1][WIDTH-1];
+                }
+                else
+                {
+                    neighbor_sum += partial_board[i+1][j-1];
+                }
+
+                // SOUTHEAST neighbor
+                if (j == WIDTH-1)
+                {
+                    neighbor_sum += partial_board[i+1][0];
+                }
+                else
+                {
+                    neighbor_sum += partial_board[i+1][j+1];
+
+                }
+
+                // WEST neighbor
+                if (j == 0)
+                {
+                    neighbor_sum += partial_board[i][WIDTH-1];
+                }
+                else
+                {
+                    neighbor_sum += partial_board[i][j-1];
+                }
+
+                // EAST neighbor
+                if (j == WIDTH-1)
+                {
+                    neighbor_sum += partial_board[i][0];
+                }
+                else
+                {
+                    neighbor_sum += partial_board[i][j+1];
+                }
+            }
+
+            // update next_state
+            if (neighbor_sum < 3 || neighbor_sum > 5)
+            {
+                next_state[i][j] = 0;
+            }
+            else 
+            {
+                next_state[i][j] = 1;
+            }
+        }
+    }
+
+    // copy next_state to partial_board
+    for (int i = 0; i < HEIGHT/p; i++)
+    {
+        for (int j = 0; j < WIDTH; j++)
+        {
+            partial_board[i][j] = next_state[i][j];
+        }
+    }
+}
+
+void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
+{
+    // run DetermineState() for num_iterations
+    for (int i = 0; i < num_iterations; i++)
+    {
+        // call MPI_Barrier() to synchronize all processes before each iteration
+        MPI_Barrier(MPI_COMM_WORLD);
+
+        DetermineState(partial_board, rank, p);
+
+        // print every 10 iterations
+        if (i % 10 == 0)
+        {
+            PrintBoard(partial_board, rank, p);
+        }
+    }
+}
+
 int main(int argc, char** argv)
 {
     int rank,p;
@@ -90,7 +418,9 @@ int main(int argc, char** argv)
     int partial_board[(HEIGHT/p)][WIDTH];
 
     GenerateInitialGOL(partial_board, rank, p);
-    PrintBoard(partial_board, rank, p);
+    //PrintBoard(partial_board, rank, p);
+
+    Simulate(partial_board, rank, p, NUM_ITERATIONS);
 
     MPI_Finalize();
     return 0;
