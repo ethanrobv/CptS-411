@@ -44,7 +44,7 @@ void GenerateInitialGOL(int** partial_board, int rank, int p)
     }
 }
 
-void print_board(int** board, int rank, int p)
+void PrintBoard(int** board, int rank, int p)
 {
     // every proc sends their local board to p0
     if (rank != 0)
@@ -94,6 +94,7 @@ int main(int argc, char** argv)
     }
 
     GenerateInitialGOL(partial_board, rank, p);
+    PrintBoard(partial_board, rank, p);
 
     for (int i = 0; i < (HEIGHT/p); i++)
     {
