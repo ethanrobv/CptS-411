@@ -125,7 +125,6 @@ int main(int argc, char** argv)
     MPI_Barrier(MPI_COMM_WORLD);
     print_board(partial_board, rank, p);
 
-
     MPI_Barrier(MPI_COMM_WORLD);
     for (int i = 0; i < HEIGHT/p; i++)
     {
