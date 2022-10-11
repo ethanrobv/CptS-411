@@ -87,19 +87,11 @@ int main(int argc, char** argv)
     MPI_Comm_size(MPI_COMM_WORLD, &p);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    int* partial_board[HEIGHT/p];
-    for (int i= 0; i < (HEIGHT/p); i++)
-    {
-        partial_board[i] = (int*)malloc(WIDTH * sizeof(int));
-    }
+    int partial_board[(HEIGHT/p)][WIDTH];
 
     GenerateInitialGOL(partial_board, rank, p);
     PrintBoard(partial_board, rank, p);
 
-    for (int i = 0; i < (HEIGHT/p); i++)
-    {
-        free(partial_board[i]);
-    }
     MPI_Finalize();
     return 0;
 }
