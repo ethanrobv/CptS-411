@@ -16,7 +16,11 @@ enum State {Dead = 0, Alive = 1};
 
 int* GenerateInitialGOL(int rank, int p)
 {
-    int (*partial_board)[WIDTH] = malloc(sizeof(int[HEIGHT/p][WIDTH]));
+    int* partial_board[HEIGHT/p];
+    for (int i= 0; i < (HEIGHT/p); i++)
+    {
+        partial_board[i] = (int*)malloc(WIDTH * sizeof(int));
+    }
 
     // give each process a random seed (except p0, which uses system time)
     if (rank == 0)
@@ -57,7 +61,10 @@ int main(int argc, char** argv)
 
     int* partial_board = GenerateInitialGOL(rank, p);
 
-    free (partial_board);
+    for (int i = 0; i < (HEIGHT/p); i++)
+    {
+        free(partial_board[i]);
+    }
     MPI_Finalize();
     return 0;
 }
