@@ -395,6 +395,7 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
     // run DetermineState() for num_iterations
     for (int i = 0; i < num_iterations; i++)
     {
+        printf("Proc %d iteration %d\n", rank, i);
         // call MPI_Barrier() to synchronize all processes before each iteration
         MPI_Barrier(MPI_COMM_WORLD);
 
