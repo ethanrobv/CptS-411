@@ -44,6 +44,42 @@ void GenerateInitialGOL(int** partial_board, int rank, int p)
     }
 }
 
+void print_board(int** board, int rank, int p)
+{
+    // every proc sends their local board to p0
+    if (rank != 0)
+    {
+        MPI_Send(&board[0][0], (HEIGHT/p)*WIDTH, MPI_INT, 0, 0, MPI_COMM_WORLD);
+    }
+    else
+    {
+        // p0 prints its local board
+        for (int i = 0; i < (HEIGHT/p); i++)
+        {
+            for (int j = 0; j < WIDTH; j++)
+            {
+                printf("%d ", board[i][j]);
+            }
+            printf("\n");
+        }
+
+        // p0 receives and prints the boards of the other procs
+        for (int i = 1; i < p; i++)
+        {
+            int recv_board[(HEIGHT/p)][WIDTH];
+            MPI_Recv(&recv_board[0][0], (HEIGHT/p)*WIDTH, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for (int j = 0; j < (HEIGHT/p); j++)
+            {
+                for (int k = 0; k < WIDTH; k++)
+                {
+                    printf("%d ", recv_board[j][k]);
+                }
+                printf("\n");
+            }
+        }
+    }
+}
+
 int main(int argc, char** argv)
 {
     int rank,p;
