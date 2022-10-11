@@ -14,7 +14,7 @@
 
 enum State {Dead = 0, Alive = 1};
 
-int GenerateInitialGOL(int** partial_board, int rank, int p)
+int** GenerateInitialGOL(int** partial_board, int rank, int p)
 {
     
 
