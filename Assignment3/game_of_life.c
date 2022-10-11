@@ -14,7 +14,7 @@
 
 enum State {Dead = 0, Alive = 1};
 
-void GenerateInitialGOL(int** partial_board, int rank, int p)
+void GenerateInitialGOL(int* partial_board[WIDTH], int rank, int p)
 {   
     // give each process a random seed (except p0, which uses system time)
     if (rank == 0)
@@ -44,7 +44,7 @@ void GenerateInitialGOL(int** partial_board, int rank, int p)
     }
 }
 
-void PrintBoard(int** board, int rank, int p)
+void PrintBoard(int* board[WIDTH], int rank, int p)
 {
     // every proc sends their local board to p0
     if (rank != 0)
@@ -67,7 +67,7 @@ void PrintBoard(int** board, int rank, int p)
         for (int i = 1; i < p; i++)
         {
             int recv_board[(HEIGHT/p)][WIDTH];
-            MPI_Recv(&recv_board[0][0], (HEIGHT/p)*WIDTH, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(recv_board, (HEIGHT/p)*WIDTH, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             for (int j = 0; j < (HEIGHT/p); j++)
             {
                 for (int k = 0; k < WIDTH; k++)
