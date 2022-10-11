@@ -16,8 +16,6 @@ enum State {Dead = 0, Alive = 1};
 
 int** GenerateInitialGOL(int** partial_board, int rank, int p)
 {
-    
-
     // give each process a random seed (except p0, which uses system time)
     if (rank == 0)
     {
@@ -63,7 +61,6 @@ int main(int argc, char** argv)
 
     GenerateInitialGOL(partial_board, rank, p);
 
-    MPI_Barrier(MPI_COMM_WORLD);
     for (int i = 0; i < HEIGHT/p; i++)
     {
         free(partial_board[i]);
