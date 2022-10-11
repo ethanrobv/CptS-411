@@ -48,66 +48,6 @@ int GenerateInitialGOL(int** partial_board, int rank, int p)
     return partial_board;
 }
 
-void print_board(int** board, int rank, int p)
-{
-    if (board == NULL)
-    {
-        printf("Board is NULL.\n");
-        return;
-    }
-    
-    // each proc sends their partial board to p0
-    if (rank != 0)
-    {
-        MPI_Send(board, HEIGHT/p*WIDTH, MPI_INT, 0, 0, MPI_COMM_WORLD);
-    }
-    else
-    {
-        // p0 prints its own partial board
-        for (int i = 0; i < HEIGHT/p; i++)
-        {
-            for (int j = 0; j < WIDTH; j++)
-            {
-                printf("%d ", board[i][j]);
-            }
-            printf("\n");
-        }
-
-        // p0 receives and prints the partial boards of the other procs
-        for (int i = 1; i < p; i++)
-        {
-            int** recv_board = (int**)malloc(HEIGHT/p*sizeof(int*));
-            for (int j = 0; j < HEIGHT/p; j++)
-            {
-                recv_board[j] = (int*)malloc(WIDTH*sizeof(int));
-            }
-            MPI_Recv(recv_board, HEIGHT/p*WIDTH, MPI_INT, i, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            for (int j = 0; j < HEIGHT/p; j++)
-            {
-                for (int k = 0; k < WIDTH; k++)
-                {
-                    if (recv_board[j][k] == Dead)
-                    {
-                        printf("-  ");
-                    }
-                    else
-                    {
-                        printf("O ");
-                    }
-                    //printf("%d ", recv_board[j][k]);
-                }
-                printf("\n");
-            }
-
-            for (int j = 0; j < HEIGHT/p; j++)
-            {
-                free(recv_board[j]);
-            }
-            free (recv_board);
-        }
-    }
-}
-
 int main(int argc, char** argv)
 {
     int rank,p;
@@ -122,8 +62,6 @@ int main(int argc, char** argv)
     }
 
     GenerateInitialGOL(partial_board, rank, p);
-    MPI_Barrier(MPI_COMM_WORLD);
-    print_board(partial_board, rank, p);
 
     MPI_Barrier(MPI_COMM_WORLD);
     for (int i = 0; i < HEIGHT/p; i++)
