@@ -45,7 +45,7 @@ int** GenerateInitialGOL(int rank, int p)
         }
     }
 
-    return partial_board;
+    return &partial_board;
 }
 
 void print_board(int** board, int rank, int p)
