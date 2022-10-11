@@ -24,10 +24,10 @@ int** GenerateInitialGOL(int rank, int p)
         srand(time(NULL));
         for (int i = 1; i < p; i++)
         {
-            int seed = rand() % (INT32_MAX-2) + 1;
+            int seed = rand() % (217645199) + 1;
             MPI_Send(&seed, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
         }
-        int my_seed = rand() % (INT32_MAX-2) + 1;
+        int my_seed = rand() % (217645199) + 1;
     }
     else
     {
