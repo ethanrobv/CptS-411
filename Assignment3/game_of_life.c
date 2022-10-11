@@ -14,7 +14,7 @@
 
 enum State {Dead = 0, Alive = 1};
 
-void GenerateInitialGOL(int* partial_board[WIDTH], int rank, int p)
+void GenerateInitialGOL(int partial_board[][WIDTH], int rank, int p)
 {   
     // give each process a random seed (except p0, which uses system time)
     if (rank == 0)
@@ -44,7 +44,7 @@ void GenerateInitialGOL(int* partial_board[WIDTH], int rank, int p)
     }
 }
 
-void PrintBoard(int* board[WIDTH], int rank, int p)
+void PrintBoard(int board[][WIDTH], int rank, int p)
 {
     // every proc sends their local board to p0
     if (rank != 0)
