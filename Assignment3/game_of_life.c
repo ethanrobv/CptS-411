@@ -11,7 +11,7 @@
 
 #define HEIGHT 32
 #define WIDTH 32
-# define NUM_ITERATIONS 100
+# define NUM_ITERATIONS 10
 
 void GenerateInitialGOL(int partial_board[][WIDTH], int rank, int p)
 {   
