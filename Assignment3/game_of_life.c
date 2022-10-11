@@ -9,8 +9,8 @@
 
 #include <mpi.h>
 
-#define HEIGHT 32
-#define WIDTH 32
+#define HEIGHT 16
+#define WIDTH 16
 # define NUM_ITERATIONS 10
 
 void GenerateInitialGOL(int partial_board[][WIDTH], int rank, int p)
@@ -380,6 +380,9 @@ void DetermineState(int partial_board[][WIDTH], int rank, int p)
         }
     }
 
+    // Call MPI_Barrier to ensure all processes have finished updating their partial boards
+    MPI_Barrier(MPI_COMM_WORLD);
+
     // copy next_state to partial_board
     for (int i = 0; i < HEIGHT/p; i++)
     {
@@ -396,8 +399,6 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
     for (int i = 0; i < num_iterations; i++)
     {
         printf("Proc %d iteration %d\n", rank, i);
-        // call MPI_Barrier() to synchronize all processes before each iteration
-        MPI_Barrier(MPI_COMM_WORLD);
 
         DetermineState(partial_board, rank, p);
 
