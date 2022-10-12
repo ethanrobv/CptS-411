@@ -393,7 +393,9 @@ int main(int argc, char** argv)
 
     if (rank == 0)
     {
-        printf("num_procs = %d    num_iterations = %d    board_size = %d", p, _num_iterations, _board_size);
+        printf("--------------------------\n");
+        printf("num_procs = %d    num_iterations = %d    board_size = %d\n", p, _num_iterations, _board_size);
+        printf("--------------------------\n");
         printf("total runtime=%lf microseconds\n", total_runtime*1000000);
         printf("average single generation time=%lf microseconds\n", (total_runtime/_num_iterations)*1000000);
         printf("communication time=%lf microseconds\n", total_comm_time*1000000);
