@@ -200,6 +200,7 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
     
     for (int i = 0; i < num_iterations; i++)
     {
+        printf("rank: %d, iteration: %d\n", rank, i);
         // MPI_Barrier to synchronize all procs
         MPI_Barrier(MPI_COMM_WORLD);
 
