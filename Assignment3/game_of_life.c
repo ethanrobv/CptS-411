@@ -11,7 +11,6 @@
 
 #define HEIGHT 16
 #define WIDTH 16
-# define NUM_ITERATIONS 10
 
 void GenerateInitialGOL(int partial_board[][WIDTH], int rank, int p)
 {   
@@ -291,13 +290,26 @@ int main(int argc, char** argv)
     MPI_Comm_size(MPI_COMM_WORLD, &p);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+    if (argc != 2)
+    {
+        printf("Usage: ./run_GOL.sh <num_iterations> <num_threads>\n");
+        return -1;
+    }
+
+    int _num_iterations = 0;
+    if (_num_iteration = atoi(argv[1]) == 0)
+    {
+        printf("invalid number of iterations\n");
+        return -1;
+    }
+
     int partial_board[(HEIGHT/p)][WIDTH];
     //printf("Proc %d: line 420\n", rank);
     GenerateInitialGOL(partial_board, rank, p);
     //printf("Proc %d: line 422\n", rank);
     //PrintBoard(partial_board, rank, p);
 
-    Simulate(partial_board, rank, p, NUM_ITERATIONS);
+    Simulate(partial_board, rank, p, _num_iterations);
 
     MPI_Finalize();
     return 0;
