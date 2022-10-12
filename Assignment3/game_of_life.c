@@ -78,332 +78,201 @@ void PrintBoard(int board[][WIDTH], int rank, int p)
     }
 }
 
-void DetermineState(int partial_board[][WIDTH], int rank, int p)
+int DetermineState(int x, int y, int partial_board[][WIDTH], int top_row[WIDTH], int bottom_row[WIDTH], int rank, int p)
 {
-    // send top row to p+1
-    // send bottom row to p-1
-
-    int top_row[WIDTH];
-    int bottom_row[WIDTH];
-
-    // copy top and bottom rows
-    for (int i = 0; i < WIDTH; i++)
+    // visit all 8 neighbors to determine next state
+    int neighbor_sum = 0;
+    
+    // ADD FIRST NEIGHBOR: TOP LEFT CORNER
+    // if x == 0 and y==0, we grab from right most cell in top_row
+    if (x == 0 && y == 0)
     {
-        top_row[i] = partial_board[0][i];
-        bottom_row[i] = partial_board[(HEIGHT/p)-1][i];
+        neighbor_sum += top_row[WIDTH-1];
     }
-
-    // send top row to p+1
-    if (rank != p-1)
+    else if (x == 0)
     {
-        MPI_Send(top_row, WIDTH, MPI_INT, rank+1, 2, MPI_COMM_WORLD);
+        neighbor_sum += top_row[y-1];
     }
     else
     {
-        MPI_Send(top_row, WIDTH, MPI_INT, 0, 2, MPI_COMM_WORLD);
+        neighbor_sum += partial_board[x-1][y-1];
     }
 
-    // send bottom row to p-1
-    if (rank != 0)
+    // ADD SECOND NEIGHBOR: TOP MIDDLE
+    if (x == 0)
     {
-        MPI_Send(bottom_row, WIDTH, MPI_INT, rank-1, 1, MPI_COMM_WORLD);
+        neighbor_sum += top_row[y];
     }
     else
     {
-        MPI_Send(bottom_row, WIDTH, MPI_INT, p-1, 1, MPI_COMM_WORLD);
+        neighbor_sum += partial_board[x-1][y];
     }
 
-    // receive top row from p-1
-    if (rank != 0)
+    // ADD THIRD NEIGHBOR: TOP RIGHT CORNER
+    // if x == 0 and y == WIDTH-1, we grab from left most cell in top_row
+    if (x == 0 && y == WIDTH-1)
     {
-        MPI_Recv(top_row, WIDTH, MPI_INT, rank-1, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        neighbor_sum += top_row[0];
+    }
+    else if (x == 0)
+    {
+        neighbor_sum += top_row[y+1];
     }
     else
     {
-        MPI_Recv(bottom_row, WIDTH, MPI_INT, p-1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        neighbor_sum += partial_board[x-1][y+1];
     }
 
-    // receive bottom row from p+1
-    if (rank != p-1)
+    // ADD FOURTH NEIGHBOR: LEFT MIDDLE
+    if (y == 0)
     {
-        MPI_Recv(bottom_row, WIDTH, MPI_INT, rank+1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        neighbor_sum += partial_board[x][WIDTH-1];
     }
     else
     {
-        MPI_Recv(top_row, WIDTH, MPI_INT, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        neighbor_sum += partial_board[x][y-1];
     }
 
-    // calculate next state of local cells
-    int next_state[(HEIGHT/p)][WIDTH];
-    for (int i = 0; i < (HEIGHT/p); i++)
+    // ADD FIFTH NEIGHBOR: RIGHT MIDDLE
+    if (y == WIDTH-1)
     {
-        for (int j = 0; j < WIDTH; j++)
-        {
-            // sum neighboring cells:
-            // Less than 3 neighbors: cell dies (or comes to life if dead)
-            // 3-5 neighbors: cell lives
-            // More than 5 neighbors: cell dies
-            int neighbor_sum = 0;
-
-            // need use top_row
-            if (i == 0)
-            {
-                // NORTH neighbor
-                neighbor_sum += top_row[j];
-
-                // NORTHWEST neighbor
-                if (j == 0)
-                {
-                    neighbor_sum += top_row[WIDTH-1];
-                }
-                else
-                {
-                    neighbor_sum += top_row[j-1];
-                }
-
-                // NORTHEAST neighbor
-                if (j == WIDTH-1)
-                {
-                    neighbor_sum += top_row[0];
-                }
-                else
-                {
-                    neighbor_sum += top_row[j+1];
-                }
-
-                // SOUTH neighbor
-                if (i == (HEIGHT/p)-1)
-                {
-                    neighbor_sum += bottom_row[j];
-                }
-                else
-                {
-                    neighbor_sum += partial_board[i+1][j];
-                }
-
-                // SOUTHWEST neighbor
-                if (i == (HEIGHT/p)-1)
-                {
-                    if (j == 0)
-                    {
-                        neighbor_sum += bottom_row[WIDTH-1];
-                    }
-                    else
-                    {
-                        neighbor_sum += bottom_row[j-1];
-                    }
-                }
-                else
-                {
-                    if (j == 0)
-                    {
-                        neighbor_sum += partial_board[i+1][WIDTH-1];
-                    }
-                    else
-                    {
-                        neighbor_sum += partial_board[i+1][j-1];
-                    }
-                }
-
-                // SOUTHEAST neighbor
-                if (i == (HEIGHT/p)-1)
-                {
-                    if (j == WIDTH-1)
-                    {
-                        neighbor_sum += bottom_row[0];
-                    }
-                    else
-                    {
-                        neighbor_sum += bottom_row[j+1];
-                    }
-                }
-                else
-                {
-                    if (j == WIDTH-1)
-                    {
-                        neighbor_sum += partial_board[i+1][0];
-                    }
-                    else
-                    {
-                        neighbor_sum += partial_board[i+1][j+1];
-                    }
-                }
-            }
-            // need to use bottom_row
-            else if (i == (HEIGHT/p)-1)
-            {
-                // NORTH neighbor
-                neighbor_sum += partial_board[i-1][j];
-
-                // NORTHWEST neighbor
-                if (j == 0)
-                {
-                    neighbor_sum += partial_board[i-1][WIDTH-1];
-                }
-                else
-                {
-                    neighbor_sum += partial_board[i-1][j-1];
-                }
-
-                // NORTHEAST neighbor
-                if (j == WIDTH-1)
-                {
-                    neighbor_sum += partial_board[i-1][0];
-                }
-                else
-                {
-                    neighbor_sum += partial_board[i-1][j+1];
-                }
-
-                // SOUTH neighbor
-                neighbor_sum += bottom_row[j];
-
-                // SOUTHWEST neighbor
-                if (j == 0)
-                {
-                    neighbor_sum += bottom_row[WIDTH-1];
-                }
-                else
-                {
-                    neighbor_sum += bottom_row[j-1];
-                }
-
-                // SOUTHEAST neighbor
-                if (j == WIDTH-1)
-                {
-                    neighbor_sum += bottom_row[0];
-                }
-                else
-                {
-                    neighbor_sum += bottom_row[j+1];
-                }
-
-                // WEST neighbor
-                if (j == 0)
-                {
-                    neighbor_sum += partial_board[i][WIDTH-1];
-                }
-                else
-                {
-                    neighbor_sum += partial_board[i][j-1];
-                }
-
-                // EAST neighbor
-                if (j == WIDTH-1)
-                {
-                    neighbor_sum += partial_board[i][0];
-                }
-                else
-                {
-                    neighbor_sum += partial_board[i][j+1];
-                }
-            }
-            else
-            {
-                // NORTH neighbor
-                neighbor_sum += partial_board[i-1][j];
-
-                // NORTHWEST neighbor
-                if (j == 0)
-                {
-                    neighbor_sum += partial_board[i-1][WIDTH-1];
-                }
-                else
-                {
-                    neighbor_sum += partial_board[i-1][j-1];
-                }
-
-                // NORTHEAST neighbor
-                if (j == WIDTH-1)
-                {
-                    neighbor_sum += partial_board[i-1][0];
-                }
-                else
-                {
-                    neighbor_sum += partial_board[i-1][j+1];
-                }
-
-                // SOUTH neighbor
-                neighbor_sum += partial_board[i+1][j];
-
-                // SOUTHWEST neighbor
-                if (j == 0)
-                {
-                    neighbor_sum += partial_board[i+1][WIDTH-1];
-                }
-                else
-                {
-                    neighbor_sum += partial_board[i+1][j-1];
-                }
-
-                // SOUTHEAST neighbor
-                if (j == WIDTH-1)
-                {
-                    neighbor_sum += partial_board[i+1][0];
-                }
-                else
-                {
-                    neighbor_sum += partial_board[i+1][j+1];
-
-                }
-
-                // WEST neighbor
-                if (j == 0)
-                {
-                    neighbor_sum += partial_board[i][WIDTH-1];
-                }
-                else
-                {
-                    neighbor_sum += partial_board[i][j-1];
-                }
-
-                // EAST neighbor
-                if (j == WIDTH-1)
-                {
-                    neighbor_sum += partial_board[i][0];
-                }
-                else
-                {
-                    neighbor_sum += partial_board[i][j+1];
-                }
-            }
-
-            // update next_state
-            if (neighbor_sum < 3 || neighbor_sum > 5)
-            {
-                next_state[i][j] = 0;
-            }
-            else 
-            {
-                next_state[i][j] = 1;
-            }
-        }
+        neighbor_sum += partial_board[x][0];
     }
-
-    // Call MPI_Barrier to ensure all processes have finished updating their partial boards
-    MPI_Barrier(MPI_COMM_WORLD);
-
-    // copy next_state to partial_board
-    for (int i = 0; i < HEIGHT/p; i++)
+    else
     {
-        for (int j = 0; j < WIDTH; j++)
-        {
-            partial_board[i][j] = next_state[i][j];
-        }
+        neighbor_sum += partial_board[x][y+1];
     }
+
+    // ADD SIXTH NEIGHBOR: BOTTOM LEFT CORNER
+    // if x == (HEIGHT/p)-1 and y == 0, we grab from right most cell in bottom_row
+    if (x == (HEIGHT/p)-1 && y == 0)
+    {
+        neighbor_sum += bottom_row[WIDTH-1];
+    }
+    else if (x == (HEIGHT/p)-1)
+    {
+        neighbor_sum += bottom_row[y-1];
+    }
+    else
+    {
+        neighbor_sum += partial_board[x+1][y-1];
+    }
+
+    // ADD SEVENTH NEIGHBOR: BOTTOM MIDDLE
+    if (x == (HEIGHT/p)-1)
+    {
+        neighbor_sum += bottom_row[y];
+    }
+    else
+    {
+        neighbor_sum += partial_board[x+1][y];
+    }
+
+    // ADD EIGHTH NEIGHBOR: BOTTOM RIGHT CORNER
+    // if x == (HEIGHT/p)-1 and y == WIDTH-1, we grab from left most cell in bottom_row
+    if (x == (HEIGHT/p)-1 && y == WIDTH-1)
+    {
+        neighbor_sum += bottom_row[0];
+    }
+    else if (x == (HEIGHT/p)-1)
+    {
+        neighbor_sum += bottom_row[y+1];
+    }
+    else
+    {
+        neighbor_sum += partial_board[x+1][y+1];
+    }
+   
+    // determine next state
+    if (neighbor_sum > 2 && neighbor_sum < 6)
+    {
+        return 1;
+    }
+
+    return 0;
 }
 
 void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
 {
-    // run DetermineState() for num_iterations
+    // each iteration, send the top and bottom rows to the appropriate proc
+    int top_row[WIDTH];
+    int bottom_row[WIDTH];
+    
     for (int i = 0; i < num_iterations; i++)
     {
-        printf("Proc %d iteration %d\n", rank, i);
+        // MPI_Barrier to synchronize all procs
+        MPI_Barrier(MPI_COMM_WORLD);
 
-        DetermineState(partial_board, rank, p);
+        // copy top and bottom rows
+        for (int i = 0; i < WIDTH; i++)
+        {
+            top_row[i] = partial_board[0][i];
+            bottom_row[i] = partial_board[(HEIGHT/p)-1][i];
+        }
 
-        // print every 10 iterations
-        if (i % 10 == 0)
+        /*
+        * MPI Sends and Receives
+        */
+        if (rank == 0)
+        {
+            // p0 top row is p-1 bottom row
+            MPI_Send(top_row, WIDTH, MPI_INT, p-1, 2, MPI_COMM_WORLD);
+
+            MPI_Send(bottom_row, WIDTH, MPI_INT, rank+1, 1, MPI_COMM_WORLD);
+
+            // p-1 bottom row is p0 top row
+            MPI_Recv(top_row, WIDTH, MPI_INT, p-1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            MPI_Recv(bottom_row, WIDTH, MPI_INT, rank+1, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        }
+        else if (rank == p-1)
+        {
+            // 0 top row is p-1 bottom row
+            MPI_Send(bottom_row, WIDTH, MPI_INT, 0, 1, MPI_COMM_WORLD);
+
+            MPI_Send(top_row, WIDTH, MPI_INT, rank-1, 2, MPI_COMM_WORLD);
+
+            // 0 top row is p-1 bottom row
+            MPI_Recv(bottom_row, WIDTH, MPI_INT, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            MPI_Recv(top_row, WIDTH, MPI_INT, rank-1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        }
+        else
+        {
+            // send top row to proc above
+            MPI_Send(top_row, WIDTH, MPI_INT, rank-1, 2, MPI_COMM_WORLD);
+            // send bottom row to proc below
+            MPI_Send(bottom_row, WIDTH, MPI_INT, rank+1, 1, MPI_COMM_WORLD);
+
+            // receive bottom row from proc above
+            MPI_Recv(top_row, WIDTH, MPI_INT, rank-1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            // receive top row from proc below
+            MPI_Recv(bottom_row, WIDTH, MPI_INT, rank+1, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        }
+
+        /*
+        * Determine new state
+        */
+
+        int new_board[(HEIGHT/p)][WIDTH];
+        for (int x = 0; x < HEIGHT/p; x++)
+        {
+            for (int y = 0; y < WIDTH; y++)
+            {
+                new_board[x][y] = DetermineNextState(partial_board, x, y, top_row, bottom_row, rank, p);
+            }
+        }
+
+        // copy new_board to partial_board
+        for (int x = 0; x < HEIGHT/p; x++)
+        {
+            for (int y = 0; y < WIDTH; y++)
+            {
+                partial_board[x][y] = new_board[x][y];
+            }
+        }
+
+        if (i % 2 == 0)
         {
             PrintBoard(partial_board, rank, p);
         }
@@ -418,9 +287,9 @@ int main(int argc, char** argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     int partial_board[(HEIGHT/p)][WIDTH];
-    printf("Proc %d: line 420\n", rank);
+    //printf("Proc %d: line 420\n", rank);
     GenerateInitialGOL(partial_board, rank, p);
-    printf("Proc %d: line 422\n", rank);
+    //printf("Proc %d: line 422\n", rank);
     //PrintBoard(partial_board, rank, p);
 
     Simulate(partial_board, rank, p, NUM_ITERATIONS);
