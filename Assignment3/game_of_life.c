@@ -72,9 +72,10 @@ void PrintBoard(int board[][WIDTH], int rank, int p)
                 {
                     printf("%d ", recv_board[j][k]);
                 }
+                printf("\n");
             }
         }
-        printf("\n\n");
+        printf("\n");
     }
 }
 
