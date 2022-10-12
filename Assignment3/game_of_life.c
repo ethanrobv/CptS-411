@@ -9,15 +9,16 @@
 
 #include <mpi.h>
 
-#define HEIGHT 16
-#define WIDTH 16
-
 #define __DEBUG__ 0
 
 // Globals for time keeping
 double total_runtime = 0.0;
 double single_generation_runtime = 0.0;
 double total_comm_time = 0.0;
+
+// Globals for game board
+int HEIGHT = 0;
+int WIDTH = 0;
 
 void GenerateInitialGOL(int partial_board[][WIDTH], int rank, int p)
 {   
@@ -316,11 +317,11 @@ int main(int argc, char** argv)
     MPI_Comm_size(MPI_COMM_WORLD, &p);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-    if (argc != 2)
+    if (argc != 3)
     {
         if (rank == 0)
         {
-            printf("Usage: ./run_GOL.sh <num_iterations> <num_threads>\n");
+            printf("usage: ./run_GOL.sh <num_iterations> <board_size> <num_threads>\n");
             printf("argv= ");
             for (int i = 0; i < argc; i++)
             {
@@ -348,6 +349,26 @@ int main(int argc, char** argv)
         return -1;
     }
 
+    int _board_size = atoi(argv[2]);
+    if (_board_size == 0)
+    {
+        if (rank == 0)
+        {
+            printf("invalid board size\n");
+            printf("argv= ");
+            for (int i = 0; i < argc; i++)
+            {
+                printf("%s ", argv[i]);
+            }
+            printf("\n");
+        }
+        
+        return -1;
+    }
+
+    HEIGHT = WIDTH = _board_size;
+
+
     // start recording time for total_runtime metric
     double start_total_runtime = MPI_Wtime();
 
@@ -372,6 +393,7 @@ int main(int argc, char** argv)
 
     if (rank == 0)
     {
+        printf("num_procs = %d    num_iterations = %d    board_size = %d", p, _num_iterations, _board_size);
         printf("total runtime=%lf microseconds\n", total_runtime*1000000);
         printf("average single generation time=%lf microseconds\n", (total_runtime/_num_iterations)*1000000);
         printf("communication time=%lf microseconds\n", total_comm_time*1000000);

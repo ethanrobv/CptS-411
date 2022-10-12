@@ -3,4 +3,4 @@
 
 #SBATCH --time=00:03:00
 
-mpirun ./game_of_life $1
+mpirun ./game_of_life $1 $2
