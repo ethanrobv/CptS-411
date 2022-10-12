@@ -292,7 +292,10 @@ int main(int argc, char** argv)
 
     if (argc != 2)
     {
-        printf("Usage: ./run_GOL.sh <num_iterations> <num_threads>\n");
+        if (rank == 0)
+        {
+            printf("Usage: ./run_GOL.sh <num_iterations> <num_threads>\n");
+        }
         return -1;
     }
 
