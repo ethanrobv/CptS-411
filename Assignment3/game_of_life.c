@@ -72,7 +72,7 @@ void PrintBoard(int board[][WIDTH], int rank, int p)
                 {
                     printf("%d ", recv_board[j][k]);
                 }
-                printf("\n");
+                printf("\n\n");
             }
         }
     }
@@ -274,6 +274,10 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
 
         if (i % 2 == 0)
         {
+            if (rank == 0)
+            {
+                printf("Iteration %d\n", i);
+            }
             PrintBoard(partial_board, rank, p);
         }
     }
