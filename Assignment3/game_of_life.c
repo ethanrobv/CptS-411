@@ -12,11 +12,18 @@
 #define HEIGHT 16
 #define WIDTH 16
 
-#define __DEBUG__ 1
+#define __DEBUG__ 0
+
+// Globals for time keeping
+double total_runtime = 0.0;
+double single_generation_runtime = 0.0;
+double total_comm_time = 0.0;
 
 void GenerateInitialGOL(int partial_board[][WIDTH], int rank, int p)
 {   
     // give each process a random seed (except p0, which uses system time)
+    // record the communication time
+    double comm_start = MPI_Wtime();
     if (rank == 0)
     {
         srand(time(NULL));
@@ -32,6 +39,9 @@ void GenerateInitialGOL(int partial_board[][WIDTH], int rank, int p)
         MPI_Recv(&recv_seed, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         srand(recv_seed);
     }
+    // stop recording comm time
+    double comm_end = MPI_Wtime();
+    total_comm_time += comm_end - comm_start;
 
     // generate random values to determine cell state
     for (int i = 0; i < (HEIGHT/p); i++)
@@ -206,6 +216,9 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
         // MPI_Barrier to synchronize all procs
         MPI_Barrier(MPI_COMM_WORLD);
 
+        // start recording time for single_generation metric
+        double start_single_gen_time = MPI_Wtime();
+
         // copy top and bottom rows
         for (int j = 0; j < WIDTH; j++)
         {
@@ -216,6 +229,8 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
         /*
         * MPI Sends and Receives
         */
+        // record communication time
+        double comm_start = MPI_Wtime();
         if (rank == 0)
         {
             // p0 top row is p-1 bottom row
@@ -253,6 +268,10 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
             MPI_Recv(bottom_row, WIDTH, MPI_INT, rank+1, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         }
 
+        // end recording communication time
+        double comm_end = MPI_Wtime();
+        total_comm_time += comm_end - comm_start;
+
         /*
         * Determine new state
         */
@@ -274,6 +293,10 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
                 partial_board[x][y] = new_board[x][y];
             }
         }
+
+        // end recording time for single_generation metric
+        double end_single_gen_time = MPI_Wtime();
+        double single_gen_time = end_single_gen_time - start_single_gen_time;
 
         if (i % 2 == 0 && __DEBUG__)
         {
@@ -325,11 +348,27 @@ int main(int argc, char** argv)
         return -1;
     }
 
+    // start recording time for total_runtime metric
+    double start_total_runtime = MPI_Wtime();
+
     int partial_board[(HEIGHT/p)][WIDTH];
 
     GenerateInitialGOL(partial_board, rank, p);
 
     Simulate(partial_board, rank, p, _num_iterations);
+
+    // end recording time for total_runtime metric
+    double end_total_runtime = MPI_Wtime();
+    double total_runtime = end_total_runtime - start_total_runtime;
+
+    
+    /*
+    * Output metrics
+    */
+    printf("total runtime=%lf microseconds\n", total_runtime*1000000);
+    printf("average single generation time=%lf microseconds\n", (total_runtime/_num_iterations)*1000000);
+    printf("total communication time=%lf microseconds\n", total_comm_time*1000000);
+    printf("total computation time=%lf microseconds\n", (total_runtime - total_comm_time)*1000000);
 
     MPI_Finalize();
     return 0;
