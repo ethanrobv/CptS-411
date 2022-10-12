@@ -204,10 +204,10 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
         MPI_Barrier(MPI_COMM_WORLD);
 
         // copy top and bottom rows
-        for (int i = 0; i < WIDTH; i++)
+        for (int j = 0; j < WIDTH; j++)
         {
-            top_row[i] = partial_board[0][i];
-            bottom_row[i] = partial_board[(HEIGHT/p)-1][i];
+            top_row[j] = partial_board[0][j];
+            bottom_row[j] = partial_board[(HEIGHT/p)-1][j];
         }
 
         /*
@@ -307,10 +307,8 @@ int main(int argc, char** argv)
     }
 
     int partial_board[(HEIGHT/p)][WIDTH];
-    //printf("Proc %d: line 420\n", rank);
+
     GenerateInitialGOL(partial_board, rank, p);
-    //printf("Proc %d: line 422\n", rank);
-    //PrintBoard(partial_board, rank, p);
 
     Simulate(partial_board, rank, p, _num_iterations);
 
