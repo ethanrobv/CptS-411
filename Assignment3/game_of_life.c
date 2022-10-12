@@ -200,7 +200,7 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
     
     for (int i = 0; i < num_iterations; i++)
     {
-        printf("rank: %d, iteration: %d\n", rank, i);
+        //printf("rank: %d, iteration: %d\n", rank, i);
         // MPI_Barrier to synchronize all procs
         MPI_Barrier(MPI_COMM_WORLD);
 
@@ -321,17 +321,6 @@ int main(int argc, char** argv)
         }
         
         return -1;
-    }
-
-    if (rank == 0)
-    {
-        printf("num_iterations: %d\n", _num_iterations);
-        printf("argv= ");
-        for (int i = 0; i < argc; i++)
-        {
-            printf("atoi(argv[%d])=%d", i, atoi(argv[i]));
-        }
-        printf("\n");
     }
 
     int partial_board[(HEIGHT/p)][WIDTH];
