@@ -365,10 +365,10 @@ int main(int argc, char** argv)
     /*
     * Output metrics
     */
-    printf("total runtime=%lf microseconds\n", total_runtime*1000000);
-    printf("average single generation time=%lf microseconds\n", (total_runtime/_num_iterations)*1000000);
-    printf("total communication time=%lf microseconds\n", total_comm_time*1000000);
-    printf("total computation time=%lf microseconds\n", (total_runtime - total_comm_time)*1000000);
+    printf("proc%d: total runtime=%lf microseconds\n", rank, total_runtime*1000000);
+    printf("proc%d: average single generation time=%lf microseconds\n", rank, (total_runtime/_num_iterations)*1000000);
+    printf("proc%d: total communication time=%lf microseconds\n", rank, total_comm_time*1000000);
+    printf("proc%d: total computation time=%lf microseconds\n", rank, (total_runtime - total_comm_time)*1000000);
 
     MPI_Finalize();
     return 0;
