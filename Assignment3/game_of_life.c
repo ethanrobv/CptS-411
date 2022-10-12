@@ -296,6 +296,11 @@ int main(int argc, char** argv)
         if (rank == 0)
         {
             printf("Usage: ./run_GOL.sh <num_iterations> <num_threads>\n");
+            printf("argv= ");
+            for (int i = 0; i < argc; i++)
+            {
+                printf("%s ", argv[i]);
+            }
         }
         return -1;
     }
@@ -304,6 +309,11 @@ int main(int argc, char** argv)
     if (_num_iterations = atoi(argv[1]) == 0)
     {
         printf("invalid number of iterations\n");
+        printf("argv= ");
+        for (int i = 0; i < argc; i++)
+        {
+            printf("%s ", argv[i]);
+        }
         return -1;
     }
 
