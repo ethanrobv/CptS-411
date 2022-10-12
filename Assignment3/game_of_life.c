@@ -259,7 +259,7 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
         {
             for (int y = 0; y < WIDTH; y++)
             {
-                new_board[x][y] = DetermineState(partial_board, x, y, top_row, bottom_row, rank, p);
+                new_board[x][y] = DetermineState(x, y, partial_board, top_row, bottom_row, rank, p);
             }
         }
 
