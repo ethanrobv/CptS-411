@@ -365,10 +365,18 @@ int main(int argc, char** argv)
     /*
     * Output metrics
     */
-    printf("proc%d: total runtime=%lf microseconds\n", rank, total_runtime*1000000);
-    printf("proc%d: average single generation time=%lf microseconds\n", rank, (total_runtime/_num_iterations)*1000000);
-    printf("proc%d: total communication time=%lf microseconds\n", rank, total_comm_time*1000000);
-    printf("proc%d: total computation time=%lf microseconds\n", rank, (total_runtime - total_comm_time)*1000000);
+    // get max of each metric
+    MPI_Allreduce(MPI_IN_PLACE, &total_runtime, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &total_comm_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &single_gen_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+
+    if (rank == 0)
+    {
+        printf("proc%d: total runtime=%lf microseconds\n", rank, total_runtime*1000000);
+        printf("proc%d: average single generation time=%lf microseconds\n", rank, (total_runtime/_num_iterations)*1000000);
+        printf("proc%d: total communication time=%lf microseconds\n", rank, total_comm_time*1000000);
+        printf("proc%d: total computation time=%lf microseconds\n", rank, (total_runtime - total_comm_time)*1000000);
+    }
 
     MPI_Finalize();
     return 0;
