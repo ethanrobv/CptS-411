@@ -301,6 +301,7 @@ int main(int argc, char** argv)
             {
                 printf("%s ", argv[i]);
             }
+            printf("\n");
         }
         return -1;
     }
@@ -308,13 +309,23 @@ int main(int argc, char** argv)
     int _num_iterations = 0;
     if (_num_iterations = atoi(argv[1]) == 0)
     {
-        printf("invalid number of iterations\n");
-        printf("argv= ");
-        for (int i = 0; i < argc; i++)
+        if (rank == 0)
         {
-            printf("%s ", argv[i]);
+            printf("invalid number of iterations\n");
+            printf("argv= ");
+            for (int i = 0; i < argc; i++)
+            {
+                printf("%s ", argv[i]);
+            }
+            printf("\n");
         }
+        
         return -1;
+    }
+
+    if (rank == 0)
+    {
+        printf("num_iterations: %d\n", _num_iterations);
     }
 
     int partial_board[(HEIGHT/p)][WIDTH];
