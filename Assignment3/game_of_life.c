@@ -12,6 +12,8 @@
 #define HEIGHT 16
 #define WIDTH 16
 
+#define __DEBUG__ 1
+
 void GenerateInitialGOL(int partial_board[][WIDTH], int rank, int p)
 {   
     // give each process a random seed (except p0, which uses system time)
@@ -273,7 +275,7 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
             }
         }
 
-        if (i % 2 == 0)
+        if (i % 2 == 0 && __DEBUG__)
         {
             if (rank == 0)
             {
