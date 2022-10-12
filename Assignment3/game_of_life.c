@@ -297,7 +297,7 @@ int main(int argc, char** argv)
     }
 
     int _num_iterations = 0;
-    if (_num_iteration = atoi(argv[1]) == 0)
+    if (_num_iterations = atoi(argv[1]) == 0)
     {
         printf("invalid number of iterations\n");
         return -1;
