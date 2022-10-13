@@ -42,8 +42,6 @@ void GenerateInitialGOL(int partial_board[][WIDTH], int rank, int p)
         srand(recv_seed);
     }
 
-    printf("proc%d has seed\n", rank);
-
     // stop recording comm time
     double comm_end = MPI_Wtime();
     total_comm_time += comm_end - comm_start;
@@ -504,7 +502,7 @@ int main(int argc, char** argv)
         printf("proc%d HEIGHT/p=%d\n", rank, HEIGHT/p);
         printf("proc%d WIDTH=%d\n", rank, WIDTH);
     }
-    
+
     int partial_board[(HEIGHT/p)][WIDTH];
 
     GenerateInitialGOL(partial_board, rank, p);
