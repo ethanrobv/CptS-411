@@ -250,104 +250,117 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
         */
         // record communication time
         double comm_start = MPI_Wtime();
-        if (rank == 0)
+        if (p != 1)
         {
-            // use non blocking communication
-            MPI_Request request1, request2;
-            MPI_Status status1, status2;
-            MPI_Irecv(bottom_row, WIDTH, MPI_INT, rank+1, 1, MPI_COMM_WORLD, &request1);
-            MPI_Irecv(top_row, WIDTH, MPI_INT, p-1, 2, MPI_COMM_WORLD, &request2);
-
-            // p0 top row is p-1 bottom row
-            MPI_Send(my_top_row, WIDTH, MPI_INT, p-1, 1, MPI_COMM_WORLD);
-
-            MPI_Send(my_bottom_row, WIDTH, MPI_INT, rank+1, 2, MPI_COMM_WORLD);
-
-            MPI_Wait(&request1, &status1);
-            MPI_Wait(&request2, &status2);
-
-            /*
-            if (__DEBUG__)
+            if (rank == 0)
             {
-                printf("Process %d has sent top and bottom rows\n", rank);
+                // use non blocking communication
+                MPI_Request request1, request2;
+                MPI_Status status1, status2;
+                MPI_Irecv(bottom_row, WIDTH, MPI_INT, rank+1, 1, MPI_COMM_WORLD, &request1);
+                MPI_Irecv(top_row, WIDTH, MPI_INT, p-1, 2, MPI_COMM_WORLD, &request2);
+
+                // p0 top row is p-1 bottom row
+                MPI_Send(my_top_row, WIDTH, MPI_INT, p-1, 1, MPI_COMM_WORLD);
+
+                MPI_Send(my_bottom_row, WIDTH, MPI_INT, rank+1, 2, MPI_COMM_WORLD);
+
+                MPI_Wait(&request1, &status1);
+                MPI_Wait(&request2, &status2);
+
+                /*
+                if (__DEBUG__)
+                {
+                    printf("Process %d has sent top and bottom rows\n", rank);
+                }
+
+                // p-1 bottom row is p0 top row
+                MPI_Recv(top_row, WIDTH, MPI_INT, p-1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+                MPI_Recv(bottom_row, WIDTH, MPI_INT, rank+1, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+                if (__DEBUG__)
+                {
+                    printf("Process %d has received top and bottom rows\n", rank);
+                }
+                */
             }
-
-            // p-1 bottom row is p0 top row
-            MPI_Recv(top_row, WIDTH, MPI_INT, p-1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            MPI_Recv(bottom_row, WIDTH, MPI_INT, rank+1, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            if (__DEBUG__)
+            else if (rank == p-1)
             {
-                printf("Process %d has received top and bottom rows\n", rank);
+                // use non blocking communication
+                MPI_Request request1, request2;
+                MPI_Status status1, status2;
+                MPI_Irecv(bottom_row, WIDTH, MPI_INT, 0, 1, MPI_COMM_WORLD, &request1);
+                MPI_Irecv(top_row, WIDTH, MPI_INT, rank-1, 2, MPI_COMM_WORLD, &request2);
+
+                // 0 top row is p-1 bottom row
+                MPI_Send(my_bottom_row, WIDTH, MPI_INT, 0, 2, MPI_COMM_WORLD);
+
+                MPI_Send(my_top_row, WIDTH, MPI_INT, rank-1, 1, MPI_COMM_WORLD);
+
+                MPI_Wait(&request1, &status1);
+                MPI_Wait(&request2, &status2);
+
+                /*
+                if (__DEBUG__)
+                {
+                    printf("Process %d has sent top and bottom rows\n", rank);
+                }
+
+                // 0 top row is p-1 bottom row
+                MPI_Recv(bottom_row, WIDTH, MPI_INT, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+                MPI_Recv(top_row, WIDTH, MPI_INT, rank-1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+                if (__DEBUG__)
+                {
+                    printf("Process %d has received top and bottom rows\n", rank);
+                }
+                */
             }
-            */
+            else
+            {
+                // use non blocking communication
+                MPI_Request request1, request2;
+                MPI_Status status1, status2;
+                MPI_Irecv(bottom_row, WIDTH, MPI_INT, rank+1, 1, MPI_COMM_WORLD, &request1);
+                MPI_Irecv(top_row, WIDTH, MPI_INT, rank-1, 2, MPI_COMM_WORLD, &request2);
+
+                // send top row to proc above
+                MPI_Send(my_top_row, WIDTH, MPI_INT, rank-1, 1, MPI_COMM_WORLD);
+                // send bottom row to proc below
+                MPI_Send(my_bottom_row, WIDTH, MPI_INT, rank+1, 2, MPI_COMM_WORLD);
+
+                MPI_Wait(&request1, &status1);
+                MPI_Wait(&request2, &status2);
+
+                /*
+                if (__DEBUG__)
+                {
+                    printf("Process %d has sent top and bottom rows\n", rank);
+                }
+
+                // receive bottom row from proc above
+                MPI_Recv(top_row, WIDTH, MPI_INT, rank-1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                // receive top row from proc below
+                MPI_Recv(bottom_row, WIDTH, MPI_INT, rank+1, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+                if (__DEBUG__)
+                {
+                    printf("Process %d has received top and bottom rows\n", rank);
+                }
+                */
+            }
         }
-        else if (rank == p-1)
-        {
-            // use non blocking communication
-            MPI_Request request1, request2;
-            MPI_Status status1, status2;
-            MPI_Irecv(bottom_row, WIDTH, MPI_INT, 0, 1, MPI_COMM_WORLD, &request1);
-            MPI_Irecv(top_row, WIDTH, MPI_INT, rank-1, 2, MPI_COMM_WORLD, &request2);
-
-            // 0 top row is p-1 bottom row
-            MPI_Send(my_bottom_row, WIDTH, MPI_INT, 0, 2, MPI_COMM_WORLD);
-
-            MPI_Send(my_top_row, WIDTH, MPI_INT, rank-1, 1, MPI_COMM_WORLD);
-
-            MPI_Wait(&request1, &status1);
-            MPI_Wait(&request2, &status2);
-
-            /*
-            if (__DEBUG__)
-            {
-                printf("Process %d has sent top and bottom rows\n", rank);
-            }
-
-            // 0 top row is p-1 bottom row
-            MPI_Recv(bottom_row, WIDTH, MPI_INT, 0, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            MPI_Recv(top_row, WIDTH, MPI_INT, rank-1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            if (__DEBUG__)
-            {
-                printf("Process %d has received top and bottom rows\n", rank);
-            }
-            */
-        }
+        // serial case
         else
         {
-            // use non blocking communication
-            MPI_Request request1, request2;
-            MPI_Status status1, status2;
-            MPI_Irecv(bottom_row, WIDTH, MPI_INT, rank+1, 1, MPI_COMM_WORLD, &request1);
-            MPI_Irecv(top_row, WIDTH, MPI_INT, rank-1, 2, MPI_COMM_WORLD, &request2);
-
-            // send top row to proc above
-            MPI_Send(my_top_row, WIDTH, MPI_INT, rank-1, 1, MPI_COMM_WORLD);
-            // send bottom row to proc below
-            MPI_Send(my_bottom_row, WIDTH, MPI_INT, rank+1, 2, MPI_COMM_WORLD);
-
-            MPI_Wait(&request1, &status1);
-            MPI_Wait(&request2, &status2);
-
-            /*
-            if (__DEBUG__)
+            // copy top and bottom rows
+            for (int j = 0; j < WIDTH; j++)
             {
-                printf("Process %d has sent top and bottom rows\n", rank);
+                top_row[j] = partial_board[0][j];
+                bottom_row[j] = partial_board[(HEIGHT/p)-1][j];
             }
-
-            // receive bottom row from proc above
-            MPI_Recv(top_row, WIDTH, MPI_INT, rank-1, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            // receive top row from proc below
-            MPI_Recv(bottom_row, WIDTH, MPI_INT, rank+1, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            if (__DEBUG__)
-            {
-                printf("Process %d has received top and bottom rows\n", rank);
-            }
-            */
         }
 
         if (__DEBUG__)
