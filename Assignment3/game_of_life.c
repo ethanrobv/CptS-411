@@ -6,10 +6,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 #include <mpi.h>
 
-#define __DEBUG__ 0
+#define __DEBUG__ 1
 
 // Globals for time keeping
 double total_runtime = 0.0;
@@ -351,6 +352,11 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
             */
         }
 
+        if (__DEBUG__)
+        {
+            printf("Process %d has finished communication for iteration %d\n", rank, i);
+        }
+
 
         // end recording communication time
         double comm_end = MPI_Wtime();
@@ -360,23 +366,44 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
         * Determine new state
         */
 
-        int new_board[(HEIGHT/p)][WIDTH];
+        if (__DEBUG__)
+        {
+            printf("Proc%d allocating new_board %d...\n", rank, i);
+        }
+
+        //int new_board[(HEIGHT/p)][WIDTH];
+        // treat 1d array as 2d array
+        //int new_board[(HEIGHT/p)*WIDTH];
+        //memset(new_board, 0, (HEIGHT/p)*WIDTH*sizeof(int));
+
+        printf("proc%d allocated new_board\n", rank);
+        
+        int k = 0;
         for (int x = 0; x < HEIGHT/p; x++)
         {
             for (int y = 0; y < WIDTH; y++)
             {
-                new_board[x][y] = DetermineState(x, y, partial_board, top_row, bottom_row, rank, p);
+                //new_board[k++] = DetermineState(x, y, partial_board, top_row, bottom_row, rank, p);
+                partial_board[x][y] = DetermineState(x, y, partial_board, top_row, bottom_row, rank, p);
             }
         }
 
+        if (__DEBUG__)
+        {
+            printf("Process %d has finished determining new state for iteration %d\n", rank, i);
+        }
+
         // copy new_board to partial_board
+        /*
+        k = 0;
         for (int x = 0; x < HEIGHT/p; x++)
         {
             for (int y = 0; y < WIDTH; y++)
             {
-                partial_board[x][y] = new_board[x][y];
+                partial_board[x][y] = new_board[k++];
             }
         }
+        */
 
         // end recording time for single_generation metric
         double end_single_gen_time = MPI_Wtime();
