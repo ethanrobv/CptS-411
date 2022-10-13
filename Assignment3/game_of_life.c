@@ -376,7 +376,10 @@ void Simulate(int partial_board[][WIDTH], int rank, int p, int num_iterations)
         //int new_board[(HEIGHT/p)*WIDTH];
         //memset(new_board, 0, (HEIGHT/p)*WIDTH*sizeof(int));
 
-        printf("proc%d allocated new_board\n", rank);
+        if (__DEBUG__)
+        {
+            printf("proc%d allocated new_board\n", rank);
+        }
         
         int k = 0;
         for (int x = 0; x < HEIGHT/p; x++)
