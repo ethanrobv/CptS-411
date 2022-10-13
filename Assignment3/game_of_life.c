@@ -40,6 +40,9 @@ void GenerateInitialGOL(int partial_board[][WIDTH], int rank, int p)
         MPI_Recv(&recv_seed, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         srand(recv_seed);
     }
+
+    printf("proc%d has seed\n", rank);
+
     // stop recording comm time
     double comm_end = MPI_Wtime();
     total_comm_time += comm_end - comm_start;
@@ -52,8 +55,10 @@ void GenerateInitialGOL(int partial_board[][WIDTH], int rank, int p)
             partial_board[i][j] = rand() % 2;
         }
     }
-
-    printf("Process %d has generated its initial board\n", rank);
+    if (__DEBUG__)
+    {
+        printf("Process %d has generated its initial board\n", rank);
+    }
 }
 
 void PrintBoard(int board[][WIDTH], int rank, int p)
@@ -425,39 +430,8 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    int _num_iterations = atoi(argv[1]);
-    if (_num_iterations == 0)
-    {
-        if (rank == 0)
-        {
-            printf("invalid number of iterations\n");
-            printf("argv= ");
-            for (int i = 0; i < argc; i++)
-            {
-                printf("%s ", argv[i]);
-            }
-            printf("\n");
-        }
-        
-        return -1;
-    }
-
-    int _board_size = atoi(argv[2]);
-    if (_board_size == 0)
-    {
-        if (rank == 0)
-        {
-            printf("invalid board size\n");
-            printf("argv= ");
-            for (int i = 0; i < argc; i++)
-            {
-                printf("%s ", argv[i]);
-            }
-            printf("\n");
-        }
-        
-        return -1;
-    }
+    int _num_iterations = 0;
+    int _board_size = 0;
 
     if (rank == 0)
     {
@@ -495,6 +469,8 @@ int main(int argc, char** argv)
     // start recording time for total_runtime metric
     double start_total_runtime = MPI_Wtime();
 
+    printf("proc%d HEIGHT/p=%d\n", rank, HEIGHT/p);
+    printf("proc%d WIDTH=%d\n", rank, WIDTH);
     int partial_board[(HEIGHT/p)][WIDTH];
 
     GenerateInitialGOL(partial_board, rank, p);
