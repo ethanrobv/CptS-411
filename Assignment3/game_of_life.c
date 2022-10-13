@@ -499,8 +499,12 @@ int main(int argc, char** argv)
     // start recording time for total_runtime metric
     double start_total_runtime = MPI_Wtime();
 
-    printf("proc%d HEIGHT/p=%d\n", rank, HEIGHT/p);
-    printf("proc%d WIDTH=%d\n", rank, WIDTH);
+    if (__DEBUG__)
+    {
+        printf("proc%d HEIGHT/p=%d\n", rank, HEIGHT/p);
+        printf("proc%d WIDTH=%d\n", rank, WIDTH);
+    }
+    
     int partial_board[(HEIGHT/p)][WIDTH];
 
     GenerateInitialGOL(partial_board, rank, p);
