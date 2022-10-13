@@ -10,7 +10,7 @@
 
 #include <mpi.h>
 
-#define __DEBUG__ 1
+#define __DEBUG__ 0
 
 // Globals for time keeping
 double total_runtime = 0.0;
