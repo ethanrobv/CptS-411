@@ -6,7 +6,7 @@
 #include <mpi.h>
 #include <stdlib.h>
 
-#define __DEBUG__ 1
+#define __DEBUG__ 0
 
 // multiply M1 x M2 while mod the inner product by P
 int** modified_matrix_multiply(int** M1, int** M2, int M1_rows, int M1_cols, int M2_rows, int M2_cols, int P)
@@ -54,6 +54,9 @@ int main(int argc, char** argv)
     int P = atoi(argv[4]);
     int seed = atoi(argv[5]);
 
+    double start_time, end_time;
+    start_time = MPI_Wtime();
+
     // init partial array
     int* partial_array = (int*)malloc(sizeof(int)*N/p);
     int iterator = 0;
@@ -87,7 +90,8 @@ int main(int argc, char** argv)
     }
     for (int i = 0; i <= rank*N/p; i++)
     {
-        printf("proc %d: computing M(%d)\n", rank, i);
+        if (__DEBUG__)
+            printf("proc %d: computing M(%d)\n", rank, i);
         if (i == 0)
         {
             Mranknp = M0;
@@ -120,7 +124,7 @@ int main(int argc, char** argv)
     int* array = (int*)malloc(sizeof(int)*N);
     MPI_Gather(partial_array, N/p, MPI_INT, array, N/p, MPI_INT, 0, MPI_COMM_WORLD);
 
-    if (rank == 0)
+    if (rank == 0 && __DEBUG__)
     {
         printf("Array: ");
         for (int i = 0; i < N; i++)
@@ -142,6 +146,13 @@ int main(int argc, char** argv)
     free(M0);
     free(M1);
     free(Mranknp);
+
+    end_time = MPI_Wtime();
+    MPI_Allreduce(MPI_IN_PLACE, &end_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+    if (rank == 0)
+    {
+        printf("Time elapsed in microseconds (time of longest proc): %lf\n", (end_time - start_time)*1000000);
+    }
 
 
     MPI_Finalize();
