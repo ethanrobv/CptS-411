@@ -139,6 +139,21 @@ int main(int argc, char** argv)
         printf("\n");
     }
 
+    // free memory
+    free(partial_array);
+    free(array);
+    for (int i = 0; i < 2; i++)
+    {
+        free(M0[i]);
+        free(M1[i]);
+        free(Mnp[i]);
+        free(Mranknp[i]);
+    }
+    free(M0);
+    free(M1);
+    free(Mnp);
+    free(Mranknp);
+
 
     MPI_Finalize();
 
